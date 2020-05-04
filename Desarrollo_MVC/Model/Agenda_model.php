@@ -31,20 +31,29 @@
 
             if(isset($_POST['alfSortNom_btn'])){
                 //ORDER BY ordena el campo indicado (nombre) de la forma indicada (ASCendant)
-                $sql = "SELECT * FROM contactos ORDER BY nombre ASC;";
+                $query = "SELECT * FROM contactos ORDER BY nombre ASC;";
             } else if(isset($_POST['alfSortApe_btn'])){
-                $sql = "SELECT * FROM contactos ORDER BY apellido ASC;";
+                $query = "SELECT * FROM contactos ORDER BY apellido ASC;";
             } else{
-                $sql = "SELECT * FROM contactos;";
+                $query = "SELECT * FROM contactos;";
             }
-            $this->fetchContactos($sql);
+            $this->fetchContactos($query);
         }
 
         private function insertContacto($nom, $ape, $num){
-            $sql = "INSERT INTO contactos (nombre,apellido,numero) VALUES('".$nom."','".$ape."',".$num.");";
-            //query ejecuta la consulta y devuelve un booleano
-            if(!$this->con->query($sql)){
-                echo "<script>console.log('Error al insertar la tabla: ".$this->con->error."');</script>";
+            //hay que comprobar si el numero existe en la db
+            $query = "SELECT numero FROM contactos;";
+
+            $result = mysqli_query($this->con, $query);
+            $row = mysqli_fetch_assoc($result);
+            if($row == false){
+                //en caso de que no exista se hace el insert
+                $sql = "INSERT INTO contactos (nombre,apellido,numero) VALUES('".$nom."','".$ape."',".$num.");";
+
+                //query ejecuta la consulta y devuelve un booleano
+                if(!$this->con->query($sql)){
+                    echo "<script>console.log('Error al insertar la tabla: ".$this->con->error."');</script>";
+                }
             }
         }
 
@@ -56,36 +65,51 @@
             }
         }
 
-        private function editContacto($nombre, $apellido, $numero, $datosOriginales){
-            //$datosOriginales = $nombre*$apellido*$numero; el metodo explode($delimiter, $string) los separa
-            $datosSeparados = explode("*", $datosOriginales);
+        private function editContacto($nombre, $apellido, $numero, $numOriginal){
 
-            //si el campo del nombre esta vacio, se deja el nombre original (guardado previamente en $datosSeparados)
-            if($nombre == "")
-                $nombre = $datosSeparados[0];
+            if($nombre != ""){
+                //se busca el nombre ingresado en la db con referencia del numero
+                $query = "SELECT nombre FROM contactos WHERE numero=".$numOriginal.";";
+                $result = mysqli_query($this->con, $query);
+                $row = mysqli_fetch_assoc($result);
+                //si ese nombre no esta en la db (osea que el nombre ingresado es distinto del original, porque se esta editando) se hace la actualizacion
+                if($row != $nombre){
+                    $sql = "UPDATE contactos SET nombre='".$nombre."' WHERE numero=".$numOriginal.";";
 
-            //lo mismo con el apellido
-            if($apellido == "")
-                $apellido = $datosSeparados[1];
-
-            $sql = "UPDATE contactos SET nombre='".$nombre."', apellido='".$apellido."'";
-
-            if($numero == $datosSeparados[2]){
-                //en caso que el numero se repita solo se hace el update del nombre y apellido
-                $sql = $sql." WHERE numero=".$datosSeparados[2].";";
-            } else{
-                //en caso de que el numero sea distinto se hace, tambien, el update del numero
-                $sql = $sql.", numero=".$numero." WHERE numero=".$datosSeparados[2].";";
+                    if(!$this->con->query($sql)){
+                        echo "<script>console.log('Error al actualizar la tabla: ".$this->con->error."');</script>";
+                    }
+                }
             }
 
-            if(!$this->con->query($sql)){
-                echo "<script>console.log('Error al actualizar la tabla: ".$this->con->error."');</script>";
+            if($apellido != ""){
+                $query = "SELECT apellido FROM contactos WHERE numero=".$numOriginal.";";
+                $result = mysqli_query($this->con, $query);
+                $row = mysqli_fetch_assoc($result);
+                if($row != $apellido){
+                    $sql = "UPDATE contactos SET apellido='".$apellido."' WHERE numero=".$numOriginal.";";
+
+                    if(!$this->con->query($sql)){
+                        echo "<script>console.log('Error al actualizar la tabla: ".$this->con->error."');</script>";
+                    }
+                }
+            }
+
+            $query = "SELECT numero FROM contactos WHERE numero=".$numOriginal.";";
+            $result = mysqli_query($this->con, $query);
+            $row = mysqli_fetch_assoc($result);
+            if($row != $numero){
+                $sql = "UPDATE contactos SET numero='".$numero."' WHERE numero=".$numOriginal.";";
+
+                if(!$this->con->query($sql)){
+                    echo "<script>console.log('Error al actualizar la tabla: ".$this->con->error."');</script>";
+                }
             }
         }
 
-        private function fetchContactos($sql){
+        private function fetchContactos($query){
             //se hace la consulta
-            if($result = mysqli_query($this->con, $sql)){
+            if($result = mysqli_query($this->con, $query)){
                 if (mysqli_num_rows($result) > 0) {
                     //se recorre el resultado de la consulta
                     while($row = mysqli_fetch_assoc($result)) {

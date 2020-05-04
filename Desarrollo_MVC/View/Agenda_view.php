@@ -14,8 +14,8 @@
                 <thead>
                     <tr class="info">
                         <form action="index.php" method="POST">
-                            <th>Nombre <button type="submit" class="btn btn-info" name="alfSortNom_btn" title="ordenado alfabético del nombre"><img src="Images/alfabetical_symbol.png" class="img-responsive" alt="Alfabetical Mode" width="20" height="16"></button></th>
-                            <th>Apellido <button type="submit" class="btn btn-info" name="alfSortApe_btn" title="ordenado alfabético del apellido"><img src="Images/alfabetical_symbol.png" class="img-responsive" alt="Alfabetical Mode" width="20" height="16"></button></th>
+                            <th>Nombre <button type="submit" class="btn btn-info" name="alfSortNom_btn" value="SortNom" title="ordenado alfabético del nombre"><img src="Images/alfabetical_symbol.png" class="img-responsive" alt="Alfabetical Mode" width="20" height="16"></button></th>
+                            <th>Apellido <button type="submit" class="btn btn-info" name="alfSortApe_btn" value="SortApe" title="ordenado alfabético del apellido"><img src="Images/alfabetical_symbol.png" class="img-responsive" alt="Alfabetical Mode" width="20" height="16"></button></th>
                         </form>
                         <th>Numero</th>
                         <th>Editar</th>
@@ -30,7 +30,7 @@
                                 echo "<td>".$registro["nombre"]."</td>";
                                 echo "<td>".$registro["apellido"]."</td>";
                                 echo "<td>".$registro["numero"]."</td>";
-                                echo "<td><button type='submit' class='btn btn-warning' onclick='editContact(".$registro["numero"].")'>Editar</button></td>";
+                                echo "<td><button type='submit' class='btn btn-warning' onclick='editContact(".$registro["numero"].", getRegister())''>Editar</button></td>";
                                 echo "<form class='form-inline' action='index.php' method='POST'>";
                                     echo "<td><button type='submit' class='btn btn-danger' value=".$registro["numero"]." name='borrar'>Borrar</button></td>";
                                 echo "</form>";
@@ -38,11 +38,11 @@
 
                             echo "<tr id='formEditar".$registro["numero"]."' style='display:none'>";
                                 echo "<form action='index.php' method='POST'>";
-                                echo "<td><input type='text' class='form-control' value=".$registro["nombre"]." name='nombreEdit'></td>";
-                                echo "<td><input type='text' class='form-control' value=".$registro["apellido"]." name='apellidoEdit'></td>";
-                                echo "<td><input type='text' class='form-control' value=".$registro["numero"]." name='numeroEdit'></td>";
-                                echo "<td><button type='submit' class='btn btn-success' name='aceptarEdit' value=".$registro["nombre"]."*".$registro["apellido"]."*".$registro["numero"]." onclick='endEdit()'>Aceptar</button></td>";
-                                echo "<td><button type='submit' class='btn btn-danger' onclick='endEdit()'>Cancelar</button></td>";
+                                echo "<td><input type='text' class='form-control' placeholder=".$registro["nombre"]." name='nombreEdit'></td>";
+                                echo "<td><input type='text' class='form-control' placeholder=".$registro["apellido"]." name='apellidoEdit'></td>";
+                                echo "<td><input type='text' class='form-control' placeholder=".$registro["numero"]." name='numeroEdit'></td>";
+                                echo "<td><button type='submit' class='btn btn-success' name='aceptarEdit' value=".$registro["numero"].">Aceptar</button></td>";
+                                echo "<td><button type='submit' class='btn btn-danger'>Cancelar</button></td>";
                                 echo "</form>";
                             echo "</tr>";
                         }
@@ -62,16 +62,24 @@
                 </tr>
             </table>
         </div>
+        <p id="demo"></p>
     </body>
     <script>
-        function editContact(id){
+        var register;
+        function editContact(id, idRegister){ //se pasa por parametro el numero del contacto que se quiere editar y el numero del que se estaba editando antes
+            register = id; //se guarda el numero que se esta editando ahora en un "registro" del numero anterior
+
+            //se ocultan los datos y se muestra el formulario del numero que se esta editando
             document.getElementById("registro"+id).style.display="none";
             document.getElementById("formEditar"+id).style.display="";
+
+            //se oculta el formulario y se muestran los datos del numero que estaba editando (el numero del registro)
+            document.getElementById("registro"+idRegister).style.display="";
+            document.getElementById("formEditar"+idRegister).style.display="none";
         }
 
-        function endEdit(){
-            document.getElementById("registro").style.display="";
-            document.getElementById("formEditar").style.display="none";
+        function getRegister(){ //se retorna el numero que se estaba editando (el numero del registro)
+            return register;
         }
     </script>
 </html>
